@@ -497,9 +497,13 @@ TArray<FMetaPolygon> BaseLibrary::getSurroundingPolygons(TArray<FRoadSegment> &s
 	}
 
 
-	for (LinkedLine* l : lines) {
+	// Disabled. In LinkedLine "FVector point" is not a pointer
+	// So deleting the lines below seems to cause problems, as our polygons may refer directly to the FVector point
+	// This cleanup being disabled will presumably cause a memory leak.
+	// TODO: re-enable below and either: copy the FVector point out of the LinkedLine, OR make it a pointer,
+	/*for (LinkedLine* l : lines) {
 		delete (l);
-	}
+	}*/
 	return polygons;
 
 
