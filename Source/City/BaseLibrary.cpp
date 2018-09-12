@@ -244,7 +244,7 @@ void decidePolygonFate(TArray<FRoadSegment> &segments, TArray<FRoadSegment> &blo
 	float len = FVector::Dist(inLine->line.p1, inLine->line.p2);
 
 	float minRoadLen = 3000;
-	if (len < minRoadLen || depth > 10) {
+	if (len < minRoadLen || depth > 2) {
 		delete inLine;
 		return;
 	}
@@ -376,7 +376,6 @@ TArray<FMetaPolygon> BaseLibrary::getSurroundingPolygons(TArray<FRoadSegment> &s
 		left->line.p1 = f.p2 + sideOffsetEnd + extraLength;
 		decidePolygonFate(segments, blocking, left, lines, true, extraRoadLen, width, middleOffset, 0);
 
-
 		if (f.width != 0.0f) {
 			LinkedLine* right = new LinkedLine();
 			right->line.p1 = f.p1 - sideOffsetBegin - extraLength;
@@ -389,6 +388,7 @@ TArray<FMetaPolygon> BaseLibrary::getSurroundingPolygons(TArray<FRoadSegment> &s
 	remaining.Append(lines);
 
 	TArray<FMetaPolygon> polygons;
+
 	int count = 0;
 	// build the actual polýgons from the linked structures
 	while (remaining.Num() > 0) {
@@ -404,7 +404,7 @@ TArray<FMetaPolygon> BaseLibrary::getSurroundingPolygons(TArray<FRoadSegment> &s
 		// now curr is top dog
 		FMetaPolygon f;
 		f.points.Add(curr->line.p1);
-		f.points.Add(curr->point.X != 0.0f ? curr->point: curr->line.p2);
+		f.points.Add(curr->point.X != 0.0f ? curr->point : curr->line.p2);
 
 		taken.Empty();
 		taken.Add(curr);
@@ -431,6 +431,8 @@ TArray<FMetaPolygon> BaseLibrary::getSurroundingPolygons(TArray<FRoadSegment> &s
 	}
 	float maxConnect = 5000;
 
+	//return polygons;
+
 	for (int i = 0; i < polygons.Num(); i++) {
 		FMetaPolygon &f = polygons[i];
 		if (f.open && FVector::Dist(f.points[0], f.points[f.points.Num() - 1]) < maxConnect) {
@@ -439,6 +441,7 @@ TArray<FMetaPolygon> BaseLibrary::getSurroundingPolygons(TArray<FRoadSegment> &s
 		f.checkOrientation();
 	}
 
+	//return polygons;
 	// combine open polygons that are close together
 	TArray<FMetaPolygon> prevOpen;
 	for (int i = 0; i < polygons.Num(); i++) {
@@ -482,6 +485,7 @@ TArray<FMetaPolygon> BaseLibrary::getSurroundingPolygons(TArray<FRoadSegment> &s
 
 	}
 	polygons.Append(prevOpen);
+	//return polygons;
 	// remove redundant points, zip together open polygons where end and beginning are really close together, and check orientation, and remove very pointy edges
 	for (int i = 0; i < polygons.Num(); i++) {
 		FMetaPolygon &f = polygons[i];
@@ -496,7 +500,12 @@ TArray<FMetaPolygon> BaseLibrary::getSurroundingPolygons(TArray<FRoadSegment> &s
 		}
 	}
 
+	return polygons;
 
+	//This guy right here is causing some problems!
+	//we don't want to leak memory, but sometimes this seems to delete vital parts of the polygons.
+	//looks like its because LinkedLine.point is *not a pointer!*
+	//so deleting it deletes data we are still using, will fix on master
 	for (LinkedLine* l : lines) {
 		delete (l);
 	}
