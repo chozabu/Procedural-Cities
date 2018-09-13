@@ -204,7 +204,7 @@ FVector getProperIntersection(FVector p1, FVector p2, FVector p3, FVector p4) {
 	if (res.X == 0.0f) {
 		res = intersection(p1 + otherTangent * backLen, p1 - otherTangent * backLen, p3, p4);
 		if (res.X == 0.0f) {
-			FVector otherTangent2 = FRotator(0, 90, 0).RotateVector(otherTangent2);
+			FVector otherTangent2 = FRotator(0, 180, 0).RotateVector(otherTangent);
 			res = intersection(p1, p2, p3 - otherTangent2*backLen, p3 + otherTangent2*backLen);
 			if (res.X == 0.0f) {
 				res = intersection(p1, p2, p4 - otherTangent2*backLen, p4 + otherTangent2*backLen);
